@@ -35,6 +35,14 @@ after(async () => {
   await mongoServer.stop();
 });
 
+test('root page explains how to use the API instead of returning a missing route error', async () => {
+  const response = await request(app).get('/');
+  assert.equal(response.status, 200);
+  assert.match(response.headers['content-type'], /text\/html/);
+  assert.match(response.text, /Student Management System/);
+  assert.match(response.text, /POST \/api\/auth\/register/);
+});
+
 test('authentication registration, duplicate email, and login', async (t) => {
   await t.test('registers a student even when the request asks for Admin', async () => {
     const response = await request(app)

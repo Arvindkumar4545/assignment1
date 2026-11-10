@@ -88,6 +88,8 @@ Install Node.js 20 or newer and have access to a MongoDB server, either locally 
 
    The command requires `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `JWT_SECRET` in `.env`. Admin passwords must be at least 12 characters. The script refuses to change an existing account's role.
 
+   The provided local MongoDB URI selects the `student_management_system` database. MongoDB creates it automatically when the Admin account or the first API record is saved. You can open that database in MongoDB Compass by connecting to `mongodb://127.0.0.1:27017` and selecting `student_management_system`.
+
 ## Run the server
 
 Start normally:
@@ -102,7 +104,7 @@ Or start with automatic restart during development:
 npm run dev
 ```
 
-The API listens on port 3000 by default (or the `PORT` in `.env`). It only starts after connecting to MongoDB. `GET /api/health` returns `{"status":"ok"}` when the server is running.
+The API listens on port 3000 by default (or the `PORT` in `.env`). It only starts after connecting to MongoDB. Visit `http://localhost:3000/` for the API welcome page, or `GET /api/health` for a JSON health check.
 
 ## Authentication and roles
 
@@ -123,6 +125,7 @@ The Admin account is created through the private seed script rather than public 
 
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
+| `GET` | `/` | Public | Show the API welcome page |
 | `POST` | `/api/auth/register` | Public | Register a Student |
 | `POST` | `/api/auth/login` | Public | Log in and receive a JWT |
 | `GET` | `/api/health` | Public | Check that the API is running |
