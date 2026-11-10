@@ -90,6 +90,14 @@ Install Node.js 20 or newer and have access to a MongoDB server, either locally 
 
    The provided local MongoDB URI selects the `student_management_system` database. MongoDB creates it automatically when the Admin account or the first API record is saved. You can open that database in MongoDB Compass by connecting to `mongodb://127.0.0.1:27017` and selecting `student_management_system`.
 
+6. To add 12 clearly identified, fictional example student records to your own MongoDB database, run:
+
+   ```bash
+   npm run seed:students
+   ```
+
+   The command uses `MONGODB_URI` from `.env` and is safe to run again: it adds missing sample records without duplicating or overwriting students. In MongoDB Compass, open the `student_management_system` database and its `students` collection. The API also returns them from `GET http://localhost:3000/api/students` after you log in and provide your Bearer token.
+
 ## Run the server
 
 Start normally:
