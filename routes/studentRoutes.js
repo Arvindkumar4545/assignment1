@@ -2,6 +2,7 @@ const express = require('express');
 const {
   createStudent,
   getStudents,
+  getStudentStats,
   getStudentById,
   updateStudent,
   deleteStudent
@@ -13,6 +14,7 @@ const router = express.Router();
 
 router.use(authenticateToken);
 router.get('/', getStudents);
+router.get('/stats', getStudentStats);
 router.get('/:id', getStudentById);
 router.post('/', authorizeRoles('Admin'), createStudent);
 router.put('/:id', authorizeRoles('Admin'), updateStudent);

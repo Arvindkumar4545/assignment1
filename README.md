@@ -1,10 +1,10 @@
 # Student Management System
 
-A beginner-friendly REST API for registering users, signing in, and managing student records. It uses MongoDB to store data and JSON Web Tokens (JWTs) to protect student endpoints.
+A full-stack student management application with a responsive browser dashboard and a beginner-friendly REST API. It uses MongoDB to store student records and JSON Web Tokens (JWTs) to protect student endpoints.
 
 ## Objective
 
-The project demonstrates authentication, password hashing, role-based access, MongoDB CRUD operations, search, filtering, sorting, and pagination in a Node.js backend.
+The project demonstrates frontend-to-backend requests, authentication, password hashing, role-based access, MongoDB CRUD operations, search, filtering, sorting, and pagination.
 
 ## Technology
 
@@ -32,11 +32,16 @@ student-management-system/
 ├── models/
 │   ├── Student.js
 │   └── User.js
+├── public/
+│   ├── app.js
+│   ├── index.html
+│   └── styles.css
 ├── routes/
 │   ├── authRoutes.js
 │   └── studentRoutes.js
 ├── scripts/
-│   └── createAdmin.js
+│   ├── createAdmin.js
+│   └── seedStudents.js
 ├── test/
 │   └── api.test.js
 ├── .env.example
@@ -112,7 +117,20 @@ Or start with automatic restart during development:
 npm run dev
 ```
 
-The API listens on port 3000 by default (or the `PORT` in `.env`). It only starts after connecting to MongoDB. Visit `http://localhost:3000/` for the API welcome page, or `GET /api/health` for a JSON health check.
+The application listens on port 3000 by default (or the `PORT` in `.env`). It only starts after connecting to MongoDB. Visit `http://localhost:3000/` for the student dashboard, or `GET /api/health` for a JSON health check.
+
+## Student dashboard
+
+Open `http://localhost:3000/` in your browser. Sign in with the Admin account created by `npm run seed:admin`, or choose **Create a student account** to register a Student. The dashboard fetches real records and summary statistics from your MongoDB database through the authenticated Express API.
+
+- View each student's name, email, age, marks, city, and department; open the eye button for full details and MongoDB record ID.
+- Admins can add, edit, and delete records directly from the dashboard. The API independently enforces the Admin role.
+- Students can register or sign in and view records, but they cannot change them.
+- Search across names, email addresses, cities, and departments. Filter by city, department, minimum marks, and age range.
+- Sort marks ascending or descending, change pages, and see live counts for the database, average marks, departments, and cities.
+- The layout works on phones as well as desktop screens.
+
+The city and department dropdowns are populated with distinct values from your database. The sample student records are visible in the dashboard after an Admin signs in.
 
 ## Authentication and roles
 
@@ -133,10 +151,11 @@ The Admin account is created through the private seed script rather than public 
 
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
-| `GET` | `/` | Public | Show the API welcome page |
+| `GET` | `/` | Public | Serve the connected student dashboard |
 | `POST` | `/api/auth/register` | Public | Register a Student |
 | `POST` | `/api/auth/login` | Public | Log in and receive a JWT |
 | `GET` | `/api/health` | Public | Check that the API is running |
+| `GET` | `/api/students/stats` | Admin or Student | Get live database summary statistics and filter options |
 | `POST` | `/api/students` | Admin | Add a student |
 | `GET` | `/api/students` | Admin or Student | List, search, filter, sort, and paginate students |
 | `GET` | `/api/students/:id` | Admin or Student | Get one student |
@@ -209,6 +228,7 @@ Delete or fetch one student using `DELETE /api/students/STUDENT_ID` or `GET /api
 
 | Parameter | Example | Meaning |
 |---|---|---|
+| `search` | `?search=asha` | Search names, email addresses, cities, and departments |
 | `city` | `?city=Patna` | Match a city (case-insensitive) |
 | `department` | `?department=CSE` | Match a department (case-insensitive) |
 | `minMarks` | `?minMarks=70` | Marks greater than or equal to this value |

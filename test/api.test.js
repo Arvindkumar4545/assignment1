@@ -32,15 +32,29 @@ before(async () => {
 after(async () => {
   const mongoose = require('mongoose');
   await mongoose.disconnect();
-  await mongoServer.stop();
+  if (mongoServer) {
+    await mongoServer.stop();
+  }
 });
 
 test('root page explains how to use the API instead of returning a missing route error', async () => {
   const response = await request(app).get('/');
   assert.equal(response.status, 200);
   assert.match(response.headers['content-type'], /text\/html/);
-  assert.match(response.text, /Student Management System/);
-  assert.match(response.text, /POST \/api\/auth\/register/);
+  assert.match(response.text, /CampusFlow/);
+  assert.match(response.text, /\/styles\.css/);
+  assert.match(response.text, /\/app\.js/);
+});
+
+test('serves the frontend JavaScript and stylesheet', async () => {
+  const script = await request(app).get('/app.js');
+  assert.equal(script.status, 200);
+  assert.match(script.headers['content-type'], /javascript/);
+  assert.match(script.text, /\/api\/students/);
+
+  const stylesheet = await request(app).get('/styles.css');
+  assert.equal(stylesheet.status, 200);
+  assert.match(stylesheet.headers['content-type'], /text\/css/);
 });
 
 test('authentication registration, duplicate email, and login', async (t) => {
@@ -258,6 +272,11 @@ test('student search, filtering, sorting, and pagination work together', async (
     assert.equal((await getStudents('?department=CSE')).body.totalStudents, 2);
     assert.equal((await getStudents('?minMarks=70')).body.totalStudents, 2);
     assert.equal((await getStudents('?minAge=20&maxAge=25')).body.totalStudents, 2);
+    assert.equal((await getStudents('?search=Kabir')).body.totalStudents, 1);
+    assert.equal(
+      (await getStudents('?search=Patna&department=CSE')).body.totalStudents,
+      1
+    );
   });
 
   await t.test('sorts marks in ascending and descending order', async () => {
@@ -290,5 +309,20 @@ test('student search, filtering, sorting, and pagination work together', async (
     assert.equal((await getStudents('?limit=101')).status, 400);
     assert.equal((await getStudents('?minAge=30&maxAge=20')).status, 400);
     assert.equal((await getStudents('?sortBy=email')).status, 400);
+    assert.equal((await getStudents(`?search=${'a'.repeat(101)}`)).status, 400);
   });
+});
+
+test('returns student summary statistics from MongoDB', async () => {
+  const response = await request(app)
+    .get('/api/students/stats')
+    .set('Authorization', `Bearer ${adminToken}`);
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.totalStudents, 3);
+  assert.equal(response.body.averageMarks, 77);
+  assert.equal(response.body.citiesCount, 2);
+  assert.equal(response.body.departmentsCount, 2);
+  assert.deepEqual(response.body.cities, ['Delhi', 'Patna']);
+  assert.deepEqual(response.body.departments, ['CSE', 'ECE']);
 });

@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7fb">
+    <meta name="description" content="Student Management System dashboard for managing student records.">
+    <title>Students | CampusFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main id="auth-screen" class="auth-screen">
+      <section class="auth-card" aria-labelledby="auth-heading">
+        <a class="brand auth-brand" href="/" aria-label="CampusFlow home">
+          <span class="brand-mark" aria-hidden="true">C</span>
+          <span>campus<span class="brand-light">flow</span></span>
+        </a>
+        <span class="eyebrow">STUDENT MANAGEMENT</span>
+        <h1 id="auth-heading">Welcome back</h1>
+        <p id="auth-description" class="muted">Sign in to view and manage your student records.</p>
+        <div id="auth-message" class="form-message" role="alert" hidden></div>
+        <form id="auth-form">
+          <label class="form-label" for="auth-name" hidden>Name</label>
+          <input id="auth-name" name="name" class="input" type="text" autocomplete="name" minlength="2" maxlength="100" placeholder="Your name" hidden>
+          <label class="form-label" for="auth-email">Email address</label>
+          <input id="auth-email" name="email" class="input" type="email" autocomplete="email" placeholder="you@college.edu" required>
+          <label class="form-label" for="auth-password">Password</label>
+          <input id="auth-password" name="password" class="input" type="password" autocomplete="current-password" minlength="8" maxlength="128" placeholder="Enter your password" required>
+          <button id="auth-submit" class="button button-primary button-wide" type="submit">Sign in</button>
+        </form>
+        <p class="auth-switch"><span id="auth-switch-prompt">New here?</span> <button id="auth-switch" class="text-button" type="button">Create a student account</button></p>
+        <p class="auth-footnote">Admins can sign in with their seeded college account.</p>
+      </section>
+      <aside class="auth-art" aria-label="CampusFlow student dashboard">
+        <div class="art-orb art-orb-one"></div>
+        <div class="art-orb art-orb-two"></div>
+        <div class="art-content">
+          <span class="art-tag">ONE PLACE FOR EVERY LEARNER</span>
+          <h2>Every student.<br>Every detail.<br><span>Right where you need it.</span></h2>
+          <p>Stay on top of student records, marks, departments and more in one simple dashboard.</p>
+          <div class="art-mini-card">
+            <div class="mini-avatars"><span>AK</span><span>AS</span><span>RS</span><span>+9</span></div>
+            <div><strong>Your campus, organized.</strong><small>Student records at a glance</small></div>
+            <span class="mini-check" aria-hidden="true">✓</span>
+          </div>
+        </div>
+        <span class="art-caption">STUDENT MANAGEMENT SYSTEM · ASSIGNMENT 1</span>
+      </aside>
+    </main>
+
+    <div id="dashboard" class="app-shell" hidden>
+      <aside class="sidebar">
+        <a class="brand sidebar-brand" href="/" aria-label="CampusFlow home">
+          <span class="brand-mark" aria-hidden="true">C</span>
+          <span>campus<span class="brand-light">flow</span></span>
+        </a>
+        <span class="nav-caption">WORKSPACE</span>
+        <button class="nav-item nav-item-active" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"></rect><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"></rect></svg>
+          <span>Overview</span>
+        </button>
+        <button id="sidebar-students" class="nav-item" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1.6a3.4 3.4 0 0 0-3.4-3.4H7.4A3.4 3.4 0 0 0 4 18.4V20"></path><circle cx="10" cy="7" r="3.3"></circle><path d="M20 20v-1.6a3.4 3.4 0 0 0-2.7-3.3M16 3.8a3.4 3.4 0 0 1 0 6.5"></path></svg>
+          <span>Students</span>
+          <span id="sidebar-count" class="nav-count">0</span>
+        </button>
+        <div class="sidebar-spacer"></div>
+        <div class="sidebar-note">
+          <span class="note-icon" aria-hidden="true">✦</span>
+          <strong>A smoother school day.</strong>
+          <p>Keep all your student records organized in one place.</p>
+        </div>
+        <div class="sidebar-footer">
+          <span class="connection-dot"></span>
+          <span>MongoDB connected</span>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div class="breadcrumbs">Workspace <span>/</span> <strong>Students</strong></div>
+          <div class="topbar-actions">
+            <span class="live-status"><span class="connection-dot"></span> Live database</span>
+            <span class="topbar-divider"></span>
+            <span id="profile-avatar" class="profile-avatar" aria-hidden="true">U</span>
+            <span class="profile-copy"><strong id="profile-name">User</strong><small id="profile-role">Student</small></span>
+            <button id="logout-button" class="icon-button logout-button" type="button" aria-label="Sign out" title="Sign out">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"></path></svg>
+            </button>
+          </div>
+        </header>
+
+        <section class="page-content">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">YOUR CAMPUS AT A GLANCE</span>
+              <h1>Student overview<span class="heading-dot">.</span></h1>
+              <p>One clear view of your campus and every student in it.</p>
+            </div>
+            <button id="add-student-button" class="button button-primary" type="button" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+              Add student
+            </button>
+          </div>
+
+          <div id="dashboard-message" class="banner-message" role="alert" hidden></div>
+
+          <section class="stats-grid" aria-label="Student summary">
+            <article class="stat-card">
+              <span class="stat-icon stat-icon-purple" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M16 20v-1.6a3.4 3.4 0 0 0-3.4-3.4H7.4A3.4 3.4 0 0 0 4 18.4V20"></path><circle cx="10" cy="7" r="3.3"></circle><path d="M20 20v-1.6a3.4 3.4 0 0 0-2.7-3.3M16 3.8a3.4 3.4 0 0 1 0 6.5"></path></svg>
+              </span>
+              <span class="stat-label">Total students</span>
+              <strong id="stat-students" class="stat-value">—</strong>
+              <span class="stat-footnote">Student records in your database</span>
+            </article>
+            <article class="stat-card">
+              <span class="stat-icon stat-icon-green" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 17l5-5 4 3 7-8"></path><path d="M14 7h6v6"></path></svg>
+              </span>
+              <span class="stat-label">Average marks</span>
+              <strong id="stat-average" class="stat-value">—</strong>
+              <span class="stat-footnote">Across all student records</span>
+            </article>
+            <article class="stat-card">
+              <span class="stat-icon stat-icon-blue" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 10h.01M9 14h.01M9 18h.01M15 10h.01M15 14h.01M15 18h.01"></path></svg>
+              </span>
+              <span class="stat-label">Departments</span>
+              <strong id="stat-departments" class="stat-value">—</strong>
+              <span class="stat-footnote">Different programs represented</span>
+            </article>
+            <article class="stat-card">
+              <span class="stat-icon stat-icon-orange" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+              </span>
+              <span class="stat-label">Cities</span>
+              <strong id="stat-cities" class="stat-value">—</strong>
+              <span class="stat-footnote">Student locations across campus</span>
+            </article>
+          </section>
+
+          <section id="students-section" class="student-panel" aria-labelledby="students-heading">
+            <div class="panel-heading">
+              <div>
+                <h2 id="students-heading">All students</h2>
+                <p>Search your records and find the student you need.</p>
+              </div>
+              <span class="table-note"><span class="connection-dot"></span> Synced with MongoDB</span>
+            </div>
+
+            <form id="filter-form" class="filter-toolbar">
+              <label class="search-box">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg>
+                <input id="filter-search" type="search" maxlength="100" placeholder="Search name, email, city..." aria-label="Search students">
+              </label>
+              <label class="select-wrap">
+                <span class="sr-only">Filter by city</span>
+                <select id="filter-city"><option value="">All cities</option></select>
+              </label>
+              <label class="select-wrap">
+                <span class="sr-only">Filter by department</span>
+                <select id="filter-department"><option value="">All departments</option></select>
+              </label>
+              <label class="number-filter">
+                <span class="sr-only">Minimum marks</span>
+                <input id="filter-marks" type="number" min="0" step="any" placeholder="Min marks">
+              </label>
+              <div class="filter-age">
+                <label class="sr-only" for="filter-min-age">Minimum age</label>
+                <input id="filter-min-age" type="number" min="0" max="120" placeholder="Age from">
+                <span>–</span>
+                <label class="sr-only" for="filter-max-age">Maximum age</label>
+                <input id="filter-max-age" type="number" min="0" max="120" placeholder="To">
+              </div>
+              <button id="clear-filters" class="button button-quiet" type="button">Clear</button>
+            </form>
+
+            <div class="table-toolbar">
+              <div class="record-count"><strong id="visible-count">0 students</strong><span>·</span><span id="current-page-caption">Page 1</span></div>
+              <label class="sort-control"><span>Sort by marks</span>
+                <select id="sort-order" aria-label="Sort students by marks">
+                  <option value="">Default order</option>
+                  <option value="asc">Lowest first</option>
+                  <option value="desc">Highest first</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="table-scroll">
+              <table class="student-table">
+                <thead>
+                  <tr><th>STUDENT</th><th>AGE</th><th>MARKS</th><th>CITY</th><th>DEPARTMENT</th><th class="actions-heading">ACTIONS</th></tr>
+                </thead>
+                <tbody id="student-rows"></tbody>
+              </table>
+            </div>
+            <div id="empty-state" class="empty-state" hidden>
+              <span class="empty-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h10l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"></path><path d="M14 3v5h6M8 13h8M8 17h5"></path></svg>
+              </span>
+              <h3>No matching students</h3>
+              <p>Try changing your search or filters to find student records.</p>
+              <button id="empty-clear-filters" class="text-button" type="button">Clear all filters</button>
+            </div>
+            <div class="pagination">
+              <span id="pagination-summary">Showing 0 students</span>
+              <div class="pagination-controls">
+                <button id="previous-page" class="page-button" type="button" aria-label="Previous page">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
+                </button>
+                <span id="page-number" class="page-number">1 / 1</span>
+                <button id="next-page" class="page-button" type="button" aria-label="Next page">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+                </button>
+              </div>
+            </div>
+          </section>
+          <footer class="page-footer">CampusFlow <span>·</span> Student Management System</footer>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="student-dialog" class="dialog-card" aria-labelledby="student-dialog-title">
+      <form id="student-form" class="dialog-form">
+        <div class="dialog-heading">
+          <div><span class="eyebrow">STUDENT RECORD</span><h2 id="student-dialog-title">Add a student</h2></div>
+          <button id="close-student-dialog" class="icon-button" type="button" aria-label="Close dialog">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m18 6-12 12M6 6l12 12"></path></svg>
+          </button>
+        </div>
+        <div id="student-form-error" class="form-message" role="alert" hidden></div>
+        <div class="student-form-grid">
+          <label class="form-label">Full name<input class="input" name="name" required minlength="2" maxlength="100" placeholder="e.g. Asha Kumar"></label>
+          <label class="form-label">Email address<input class="input" name="email" type="email" required placeholder="student@college.edu"></label>
+          <label class="form-label">Age<input class="input" name="age" type="number" required min="0" max="120" step="1" placeholder="20"></label>
+          <label class="form-label">Marks<input class="input" name="marks" type="number" required min="0" step="any" placeholder="85"></label>
+          <label class="form-label">City<input class="input" name="city" required maxlength="100" placeholder="e.g. Patna"></label>
+          <label class="form-label">Department<input class="input" name="department" required maxlength="100" placeholder="e.g. CSE"></label>
+        </div>
+        <div class="dialog-actions">
+          <button id="cancel-student-dialog" class="button button-secondary" type="button">Cancel</button>
+          <button id="save-student-button" class="button button-primary" type="submit">Add student</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="detail-dialog" class="dialog-card detail-dialog" aria-labelledby="detail-name">
+      <div id="student-details" class="detail-body"></div>
+      <div class="dialog-actions"><button id="close-detail-dialog" class="button button-secondary" type="button">Close</button></div>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

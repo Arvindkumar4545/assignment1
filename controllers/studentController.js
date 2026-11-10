@@ -43,6 +43,20 @@ function readStudentData(body, partial = false) {
 function buildStudentFilter(query) {
   const filter = {};
 
+  if (query.search !== undefined) {
+    if (typeof query.search !== 'string' || query.search.trim().length > 100) {
+      return { error: 'search must be text no longer than 100 characters.' };
+    }
+
+    const search = query.search.trim();
+    if (search) {
+      const searchPattern = new RegExp(escapeRegex(search), 'i');
+      filter.$or = ['name', 'email', 'city', 'department'].map((field) => ({
+        [field]: searchPattern
+      }));
+    }
+  }
+
   for (const field of ['city', 'department']) {
     if (query[field] !== undefined) {
       if (typeof query[field] !== 'string' || !query[field].trim()) {
@@ -160,6 +174,28 @@ async function getStudents(req, res, next) {
   }
 }
 
+async function getStudentStats(req, res, next) {
+  try {
+    const [totalStudents, marksSummary, cities, departments] = await Promise.all([
+      Student.countDocuments(),
+      Student.aggregate([{ $group: { _id: null, average: { $avg: '$marks' } } }]),
+      Student.distinct('city'),
+      Student.distinct('department')
+    ]);
+
+    return res.status(200).json({
+      totalStudents,
+      averageMarks: marksSummary.length ? Math.round(marksSummary[0].average * 10) / 10 : 0,
+      cities: cities.sort((first, second) => first.localeCompare(second)),
+      departments: departments.sort((first, second) => first.localeCompare(second)),
+      citiesCount: cities.length,
+      departmentsCount: departments.length
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 async function getStudentById(req, res, next) {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) {
@@ -222,6 +258,7 @@ async function deleteStudent(req, res, next) {
 module.exports = {
   createStudent,
   getStudents,
+  getStudentStats,
   getStudentById,
   updateStudent,
   deleteStudent
