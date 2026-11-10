@@ -37,13 +37,51 @@ after(async () => {
   }
 });
 
-test('root page explains how to use the API instead of returning a missing route error', async () => {
-  const response = await request(app).get('/');
-  assert.equal(response.status, 200);
-  assert.match(response.headers['content-type'], /text\/html/);
-  assert.match(response.text, /CampusFlow/);
-  assert.match(response.text, /\/styles\.css/);
-  assert.match(response.text, /\/app\.js/);
+test('serves the dashboard at the root and all direct frontend routes', async (t) => {
+  await t.test('shows the dashboard from the root', async () => {
+    const response = await request(app).get('/');
+    assert.equal(response.status, 200);
+    assert.match(response.headers['content-type'], /text\/html/);
+    assert.match(response.text, /CampusFlow/);
+    assert.match(response.text, /\/styles\.css/);
+    assert.match(response.text, /\/app\.js/);
+  });
+
+  for (const route of [
+    '/auth/register',
+    '/auth/login',
+    '/students',
+    '/students/507f1f77bcf86cd799439011'
+  ]) {
+    await t.test(`serves the frontend at ${route}`, async () => {
+      const response = await request(app).get(route);
+      assert.equal(response.status, 200);
+      assert.match(response.headers['content-type'], /text\/html/);
+      assert.match(response.text, /CampusFlow/);
+    });
+  }
+});
+
+test('keeps API registration and login routes separate from browser pages', async () => {
+  const registrationPage = await request(app).get('/auth/register');
+  assert.equal(registrationPage.status, 200);
+  assert.match(registrationPage.text, /id="auth-form"/);
+  assert.match(registrationPage.text, /id="auth-name"/);
+  assert.match(registrationPage.text, /src="\/app\.js"/);
+
+  const apiRegistration = await request(app).post('/api/auth/register').send({
+    name: 'Route Check Student',
+    email: 'route-check@example.com',
+    password: 'route-check-password'
+  });
+  assert.equal(apiRegistration.status, 201);
+
+  const apiLogin = await request(app).post('/api/auth/login').send({
+    email: 'route-check@example.com',
+    password: 'route-check-password'
+  });
+  assert.equal(apiLogin.status, 200);
+  assert.equal(typeof apiLogin.body.token, 'string');
 });
 
 test('serves the frontend JavaScript and stylesheet', async () => {

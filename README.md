@@ -117,11 +117,11 @@ Or start with automatic restart during development:
 npm run dev
 ```
 
-The application listens on port 3000 by default (or the `PORT` in `.env`). It only starts after connecting to MongoDB. Visit `http://localhost:3000/` for the student dashboard, or `GET /api/health` for a JSON health check.
+The application listens on port 3000 by default (or the `PORT` in `.env`). It only starts after connecting to MongoDB. Visit `http://localhost:3000/` for the student dashboard. The direct browser routes `http://localhost:3000/auth/register`, `http://localhost:3000/auth/login`, and `http://localhost:3000/students` work on refresh as well. Use `GET /api/health` for a JSON health check.
 
 ## Student dashboard
 
-Open `http://localhost:3000/` in your browser. Sign in with the Admin account created by `npm run seed:admin`, or choose **Create a student account** to register a Student. The dashboard fetches real records and summary statistics from your MongoDB database through the authenticated Express API.
+Open `http://localhost:3000/auth/login` or `http://localhost:3000/` in your browser. Sign in with the Admin account created by `npm run seed:admin`, or visit `http://localhost:3000/auth/register` to register a Student. After signing in, the dashboard is available at `http://localhost:3000/students`. Click a student's details icon to open the direct student page at `/students/:id`. The dashboard fetches real records and summary statistics from your MongoDB database through the authenticated Express API.
 
 - View each student's name, email, age, marks, city, and department; open the eye button for full details and MongoDB record ID.
 - Admins can add, edit, and delete records directly from the dashboard. The API independently enforces the Admin role.
@@ -134,7 +134,7 @@ The city and department dropdowns are populated with distinct values from your d
 
 ## Authentication and roles
 
-Register a normal account at `POST /api/auth/register`; public registration always assigns the `Student` role and ignores any requested role. Passwords are hashed with bcrypt before storage. Sign in at `POST /api/auth/login` to receive a JWT.
+The browser registration and sign-in pages are `/auth/register` and `/auth/login`. Their forms send credentials to `POST /api/auth/register` and `POST /api/auth/login`. Public registration always assigns the `Student` role and ignores any requested role. Passwords are hashed with bcrypt before storage. Successful sign-in opens `/students`.
 
 For student endpoints, include this HTTP header:
 
@@ -151,7 +151,11 @@ The Admin account is created through the private seed script rather than public 
 
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
-| `GET` | `/` | Public | Serve the connected student dashboard |
+| `GET` | `/` | Public | Open the student dashboard or sign-in page |
+| `GET` | `/auth/register` | Public | Open the Student registration form |
+| `GET` | `/auth/login` | Public | Open the sign-in form |
+| `GET` | `/students` | Signed-in user | Open the student dashboard |
+| `GET` | `/students/:id` | Signed-in user | Open one student's details in the dashboard |
 | `POST` | `/api/auth/register` | Public | Register a Student |
 | `POST` | `/api/auth/login` | Public | Log in and receive a JWT |
 | `GET` | `/api/health` | Public | Check that the API is running |

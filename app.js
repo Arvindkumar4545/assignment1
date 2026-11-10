@@ -19,6 +19,12 @@ app.get('/api/health', (req, res) => {
 });
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
+
+const frontendPath = path.join(__dirname, 'public', 'index.html');
+app.get(
+  ['/auth/register', '/auth/login', '/students', '/students/:id'],
+  (req, res) => res.sendFile(frontendPath)
+);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found.' });

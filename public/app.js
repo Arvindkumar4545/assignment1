@@ -106,10 +106,13 @@ function showLogin(message = '') {
   sessionStorage.removeItem('campusflow-token');
   sessionStorage.removeItem('campusflow-user');
   currentUser = null;
+  if (window.location.pathname !== '/auth/login') {
+    window.history.replaceState({}, '', '/auth/login');
+  }
+  setAuthMode(false);
   dashboard.hidden = true;
   authScreen.hidden = false;
   authPasswordInput.value = '';
-  authPasswordInput.autocomplete = isRegisterMode ? 'new-password' : 'current-password';
   hideFormMessage(authMessage);
 
   if (message) {
@@ -150,6 +153,88 @@ function openDashboard(user) {
   loadDashboard();
 }
 
+function navigateTo(path, replace = false) {
+  if (replace) {
+    window.history.replaceState({}, '', path);
+  } else {
+    window.history.pushState({}, '', path);
+  }
+
+  renderAppRoute();
+}
+
+function showAuthPage(register) {
+  authScreen.hidden = false;
+  dashboard.hidden = true;
+  setAuthMode(register);
+}
+
+function getSavedUser() {
+  try {
+    const savedUser = JSON.parse(sessionStorage.getItem('campusflow-user'));
+    if (getToken() && savedUser?.role && savedUser?.name && savedUser?.email) {
+      return savedUser;
+    }
+  } catch {
+    sessionStorage.removeItem('campusflow-user');
+  }
+
+  return null;
+}
+
+async function openStudentRoute(studentId) {
+  try {
+    const result = await apiRequest(`/api/students/${encodeURIComponent(studentId)}`);
+    if (window.location.pathname.replace(/\/$/, '') === `/students/${studentId}`) {
+      showStudentDetails(result.student, false);
+    }
+  } catch (error) {
+    if (!getToken()) return;
+    showDashboardMessage(error.message);
+    navigateTo('/students', true);
+  }
+}
+
+function renderAppRoute() {
+  const { pathname } = window.location;
+
+  if (pathname === '/auth/register') {
+    showAuthPage(true);
+    return;
+  }
+
+  if (pathname === '/auth/login') {
+    showAuthPage(false);
+    return;
+  }
+
+  const studentRoute = pathname.match(/^\/students(?:\/([^/]+))?\/?$/);
+  if (studentRoute) {
+    const user = getSavedUser();
+    if (!user) {
+      showLogin();
+      return;
+    }
+
+    if (detailDialog.open) {
+      detailDialog.close();
+    }
+    openDashboard(user);
+    if (studentRoute[1]) {
+      openStudentRoute(studentRoute[1]);
+    }
+    return;
+  }
+
+  const savedUser = getSavedUser();
+  if (savedUser) {
+    navigateTo('/students', true);
+    return;
+  }
+
+  navigateTo('/auth/login', true);
+}
+
 async function handleAuthentication(event) {
   event.preventDefault();
   hideFormMessage(authMessage);
@@ -174,7 +259,7 @@ async function handleAuthentication(event) {
     });
 
     if (isRegisterMode) {
-      setAuthMode(false);
+      navigateTo('/auth/login');
       authEmailInput.value = body.email;
       showFormMessage(authMessage, 'Account created. You can now sign in.');
       return;
@@ -182,7 +267,7 @@ async function handleAuthentication(event) {
 
     sessionStorage.setItem('campusflow-token', result.token);
     sessionStorage.setItem('campusflow-user', JSON.stringify(result.user));
-    openDashboard(result.user);
+    navigateTo('/students');
   } catch (error) {
     showFormMessage(authMessage, error.message);
   } finally {
@@ -501,7 +586,7 @@ async function deleteStudent(student) {
   }
 }
 
-function showStudentDetails(student) {
+function showStudentDetails(student, updateRoute = true) {
   const details = document.querySelector('#student-details');
   details.replaceChildren();
   const initials = student.name
@@ -548,14 +633,28 @@ function showStudentDetails(student) {
 
   details.append(header, grid);
   detailDialog.showModal();
+  if (updateRoute) {
+    window.history.pushState({}, '', `/students/${encodeURIComponent(student._id)}`);
+  }
 }
 
 authForm.addEventListener('submit', handleAuthentication);
-authSwitch.addEventListener('click', () => setAuthMode(!isRegisterMode));
-document.querySelector('#logout-button').addEventListener('click', () => showLogin());
+authSwitch.addEventListener('click', () => {
+  navigateTo(isRegisterMode ? '/auth/login' : '/auth/register');
+});
+document.querySelector('#logout-button').addEventListener('click', () => {
+  sessionStorage.removeItem('campusflow-token');
+  sessionStorage.removeItem('campusflow-user');
+  navigateTo('/auth/login');
+});
 document.querySelector('#add-student-button').addEventListener('click', () => openStudentDialog());
 document.querySelector('#sidebar-students').addEventListener('click', () => {
+  navigateTo('/students');
   document.querySelector('#students-section').scrollIntoView({ behavior: 'smooth' });
+});
+document.querySelector('.nav-item-active').addEventListener('click', () => {
+  navigateTo('/students');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 document.querySelector('#clear-filters').addEventListener('click', clearFilters);
 document.querySelector('#empty-clear-filters').addEventListener('click', clearFilters);
@@ -573,7 +672,14 @@ document.querySelector('#next-page').addEventListener('click', () => {
 });
 document.querySelector('#close-student-dialog').addEventListener('click', () => studentDialog.close());
 document.querySelector('#cancel-student-dialog').addEventListener('click', () => studentDialog.close());
-document.querySelector('#close-detail-dialog').addEventListener('click', () => detailDialog.close());
+document.querySelector('#close-detail-dialog').addEventListener('click', () => {
+  detailDialog.close();
+});
+detailDialog.addEventListener('close', () => {
+  if (window.location.pathname.startsWith('/students/')) {
+    navigateTo('/students', true);
+  }
+});
 studentForm.addEventListener('submit', saveStudent);
 sortOrder.addEventListener('change', () => applyFilters());
 filterForm.addEventListener('submit', (event) => {
@@ -599,19 +705,5 @@ document.querySelector('#students-section').addEventListener('keydown', (event) 
   }
 });
 
-function restoreSession() {
-  const token = getToken();
-  const savedUser = sessionStorage.getItem('campusflow-user');
-  if (!token || !savedUser) {
-    showLogin();
-    return;
-  }
-
-  try {
-    openDashboard(JSON.parse(savedUser));
-  } catch {
-    showLogin();
-  }
-}
-
-restoreSession();
+window.addEventListener('popstate', renderAppRoute);
+window.addEventListener('DOMContentLoaded', renderAppRoute, { once: true });
