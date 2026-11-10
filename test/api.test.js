@@ -64,6 +64,12 @@ test('authentication registration, duplicate email, and login', async (t) => {
       .post('/api/auth/register')
       .send({ name: 'A', email: 'not-an-email', password: 'short' });
     assert.equal(invalid.status, 400);
+
+    const invalidJson = await request(app)
+      .post('/api/auth/register')
+      .set('Content-Type', 'application/json')
+      .send('{"name":');
+    assert.equal(invalidJson.status, 400);
   });
 
   await t.test('creates the first Admin securely and does not change an existing role', async () => {

@@ -49,7 +49,7 @@ student-management-system/
 
 ## Requirements and installation
 
-Install Node.js 18 or newer and have access to a MongoDB server, either locally or through MongoDB Atlas.
+Install Node.js 20 or newer and have access to a MongoDB server, either locally or through MongoDB Atlas.
 
 1. Install the project packages:
 

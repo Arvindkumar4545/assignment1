@@ -3,6 +3,10 @@ function errorHandler(error, req, res, next) {
     return next(error);
   }
 
+  if (error.type === 'entity.parse.failed') {
+    return res.status(400).json({ message: 'Request body must be valid JSON.' });
+  }
+
   if (error.code === 11000) {
     const field = Object.keys(error.keyPattern || {})[0] || 'value';
     return res.status(409).json({ message: `${field} is already registered.` });
